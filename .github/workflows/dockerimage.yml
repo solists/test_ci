@@ -4,11 +4,6 @@ on:
   push:
     branches: [ main ]
 
-myenv:
-  DOCKER_USERNAME: ${{ env.secrets.DOCKER_USERNAME }}
-  DOCKER_PASSWORD: ${{ env.secrets.DOCKER_PASSWORD }}
-  KUBECONFIG: ${{ env.secrets.KUBECONFIG }}
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
