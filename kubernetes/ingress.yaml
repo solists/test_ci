@@ -9,10 +9,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - http://m.yuff.tw1.su
+        - m.yuff.tw1.su
       secretName: myapp-tls
   rules:
-    - host: http://m.yuff.tw1.su
+    - host: m.yuff.tw1.su
       http:
         paths:
           - path: /myapp
