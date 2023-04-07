@@ -1,4 +1,3 @@
-# deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,6 +14,6 @@ spec:
     spec:
       containers:
         - name: myapp
-          image: docker.io/solists/myapp:latest
+          image: docker.io/solists/myapp:main
           ports:
             - containerPort: 8080
