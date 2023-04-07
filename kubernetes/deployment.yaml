@@ -15,6 +15,6 @@ spec:
     spec:
       containers:
         - name: myapp
-          image: docker.io/<docker-username>/myapp:latest
+          image: docker.io/solists/myapp:latest
           ports:
             - containerPort: 8080
