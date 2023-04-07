@@ -37,6 +37,9 @@ jobs:
         run: |
           mkdir -p ~/.kube
           echo "${{secrets.KUBECONFIG}}" > ~/.kube/config
+      - name: Create namespace if it doesn't exist
+        run: |
+          kubectl get namespace myapp || kubectl create namespace myapp
 
       - name: Deploy to Kubernetes
         run: |
