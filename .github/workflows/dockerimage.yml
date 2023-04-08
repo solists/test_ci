@@ -40,7 +40,6 @@ jobs:
       - name: Create namespace if it doesn't exist
         run: |
           kubectl get namespace myapp || kubectl create namespace myapp
-
       - name: Deploy to Kubernetes
         run: |
           kubectl apply -f kubernetes/deployment.yaml

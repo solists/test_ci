@@ -15,7 +15,7 @@ spec:
     - host: m.yuff.tw1.su
       http:
         paths:
-          - path: /myapp
+          - path: /
             pathType: Prefix
             backend:
               service:
