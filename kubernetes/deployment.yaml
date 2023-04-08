@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: myapp
-          image: docker.io/solists/myapp:main
+          image: docker.io/solists/myapp:v0.1
           env:
             - name: POSTGRES_PASSWORD
               valueFrom:
