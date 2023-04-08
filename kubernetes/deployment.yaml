@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: myapp
-          image: docker.io/solists/myapp:v0.1
+          image: docker.io/solists/myapp:v0.1.1
           env:
             - name: POSTGRES_PASSWORD
               valueFrom:
@@ -29,12 +29,12 @@ spec:
               valueFrom:
                 configMapKeyRef:
                   name: postgres-configuration
-                  key: POSTGRES_PASSWORD
+                  key: POSTGRES_USER
             - name: POSTGRES_DB
               valueFrom:
                 configMapKeyRef:
                   name: postgres-configuration
-                  key: POSTGRES_PASSWORD
+                  key: POSTGRES_DB
           ports:
             - containerPort: 8080
           resources:

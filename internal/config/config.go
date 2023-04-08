@@ -6,7 +6,7 @@ import (
 )
 
 type Config struct {
-	DBURI string
+	DBDSN string
 }
 
 func GetConfig() *Config {
@@ -16,9 +16,8 @@ func GetConfig() *Config {
 	dbUser := os.Getenv("POSTGRES_USER")
 	dbPass := os.Getenv("POSTGRES_PASSWORD")
 
-	// Construct the database connection string
-	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", dbHost, dbPort, dbUser, dbPass, dbName)
+	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", dbUser, dbPass, dbHost, dbPort, dbName)
 	return &Config{
-		DBURI: connStr,
+		DBDSN: connStr,
 	}
 }

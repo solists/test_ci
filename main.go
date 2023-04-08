@@ -7,7 +7,6 @@ import (
 	"github.com/pressly/goose/v3"
 	"github.com/prometheus/client_golang/prometheus"
 	"go.uber.org/zap"
-	"log"
 	"mymod/internal/config"
 	"net/http"
 )
@@ -39,14 +38,14 @@ func main() {
 
 	cfg := config.GetConfig()
 
-	db, err := sqlx.Connect(dbDriver, cfg.DBURI)
+	db, err := sqlx.Connect(dbDriver, cfg.DBDSN)
 	if err != nil {
-		log.Fatalf("failed to connect to database: %v", err)
+		logger.Fatal(fmt.Sprintf("Failed to connect to database: %s", err))
 	}
 
 	// Run the database migrations using goose.
 	if err := goose.Up(db.DB, "./migrations"); err != nil {
-		log.Fatalf("failed to apply database migrations: %v", err)
+		logger.Fatal(fmt.Sprintf("failed to apply database migrations: %v", err))
 	}
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
