@@ -23,17 +23,17 @@ spec:
             - name: POSTGRES_PASSWORD
               valueFrom:
                 configMapKeyRef:
-                  name: postgres-configuration.postgres
+                  name: postgres-configuration
                   key: POSTGRES_PASSWORD
             - name: POSTGRES_USER
               valueFrom:
                 configMapKeyRef:
-                  name: postgres-configuration.postgres
+                  name: postgres-configuration
                   key: POSTGRES_PASSWORD
             - name: POSTGRES_DB
               valueFrom:
                 configMapKeyRef:
-                  name: postgres-configuration.postgres
+                  name: postgres-configuration
                   key: POSTGRES_PASSWORD
           ports:
             - containerPort: 8080
