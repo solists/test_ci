@@ -2,7 +2,7 @@
 -- +goose StatementBegin
 create table if not exists ids (
     id bigserial primary key,
-    created_at timestamptz not null default now(),
+    created_at timestamptz not null default now()
 );
 -- +goose StatementEnd
 
