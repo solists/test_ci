@@ -4,7 +4,6 @@ import (
 	"context"
 	"mymod/internal/config"
 	"mymod/internal/controller"
-	"mymod/internal/migrate"
 	"mymod/internal/repository"
 	"mymod/internal/service"
 	"net"
@@ -43,18 +42,20 @@ func main() {
 
 	cfg := config.GetConfig()
 
-	db, err := sqlx.Connect(config.PostgresDriver, cfg.DBDSN)
-	if err != nil {
-		logger.Fatalf("Failed to connect to database: %s", err)
-	}
+	var db *sqlx.DB
+	//
+	//db, err := sqlx.Connect(config.PostgresDriver, cfg.DBDSN)
+	//if err != nil {
+	//	logger.Fatalf("Failed to connect to database: %s", err)
+	//}
 
-	mustInit(migrate.Migrate(
-		cfg,
-		db,
-		config.PostgresDriver,
-		config.PostgresMigrationsPath,
-		false,
-	))
+	//mustInit(migrate.Migrate(
+	//	cfg,
+	//	db,
+	//	config.PostgresDriver,
+	//	config.PostgresMigrationsPath,
+	//	false,
+	//))
 
 	repo := repository.NewRepository(db)
 	ctrl := controller.NewController(repo, cfg)
@@ -72,22 +73,35 @@ func main() {
 		[]grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}))
 
 	dbgMux := mux.NewRouter()
+	dbgMux.Use(loggingMiddleware)
 	serveSwagger(dbgMux)
 
 	go func() {
-		mustInit(http.ListenAndServe(":8084", dbgMux))
 		logger.Info("started gateway on localhost:8084")
+		mustInit(http.ListenAndServe(":8084", dbgMux))
+	}()
+	go func() {
+		logger.Info("started grpc gateway on 8082 port")
+		mustInit(server.Serve(lis))
 	}()
 
-	mustInit(server.Serve(lis))
-	logger.Info("started grpc gateway on 8082 port")
-	mustInit(http.ListenAndServe(":8080", serveMux))
 	logger.Info("started gateway on localhost:8080")
+	mustInit(http.ListenAndServe(":8080", serveMux))
+}
+
+func loggingMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		logger.Infof("Request: %s %s", r.Method, r.URL.Path)
+		next.ServeHTTP(w, r)
+	})
 }
 
 func serveSwagger(mux *mux.Router) {
-	mux.Handle("/swagger", httpSwagger.Handler(
-		httpSwagger.URL("http://localhost:8084/swagger.json"), // URL to your swagger.json
+	mux.Handle("/swagger/", httpSwagger.Handler(
+		httpSwagger.URL("http://localhost:8084/swagger.json"),
+	))
+	mux.Handle("/swagger/index.html", httpSwagger.Handler(
+		httpSwagger.URL("http://localhost:8084/swagger.json"),
 	))
 	mux.HandleFunc("/swagger.json", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "api/api.swagger.json")

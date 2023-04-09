@@ -30,7 +30,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: "${{secrets.DOCKER_USERNAME}}/myapp:v0.1.3"
+          tags: "${{secrets.DOCKER_USERNAME}}/myapp:v0.1.4"
           labels: ${{ steps.meta.outputs.labels }}
           
       - name: Set up Kubernetes environment
