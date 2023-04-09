@@ -1,14 +1,25 @@
 package main
 
 import (
-	"fmt"
+	"context"
+	"mymod/internal/config"
+	"mymod/internal/controller"
+	"mymod/internal/migrate"
+	"mymod/internal/repository"
+	"mymod/internal/service"
+	"net"
+	"net/http"
+
+	"github.com/gorilla/mux"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"github.com/pressly/goose/v3"
 	"github.com/prometheus/client_golang/prometheus"
-	"go.uber.org/zap"
-	"mymod/internal/config"
-	"net/http"
+	"github.com/solists/test_ci/pkg/logger"
+	v1 "github.com/solists/test_ci/pkg/pb/myapp/v1"
+	httpSwagger "github.com/swaggo/http-swagger"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 var (
@@ -25,37 +36,66 @@ func init() {
 	prometheus.MustRegister(requestCounter)
 }
 
-const (
-	dbDriver = "postgres"
-)
-
 func main() {
-	logger, err := zap.NewProduction()
-	if err != nil {
-		panic(err)
-	}
-	defer logger.Sync()
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 
 	cfg := config.GetConfig()
 
-	db, err := sqlx.Connect(dbDriver, cfg.DBDSN)
+	db, err := sqlx.Connect(config.PostgresDriver, cfg.DBDSN)
 	if err != nil {
-		logger.Fatal(fmt.Sprintf("Failed to connect to database: %s", err))
+		logger.Fatalf("Failed to connect to database: %s", err)
 	}
 
-	// Run the database migrations using goose.
-	if err := goose.Up(db.DB, "./migrations"); err != nil {
-		logger.Fatal(fmt.Sprintf("failed to apply database migrations: %v", err))
+	mustInit(migrate.Migrate(
+		cfg,
+		db,
+		config.PostgresDriver,
+		config.PostgresMigrationsPath,
+		false,
+	))
+
+	repo := repository.NewRepository(db)
+	ctrl := controller.NewController(repo, cfg)
+	serviceImpl := service.NewService(ctrl)
+	server := grpc.NewServer()
+	v1.RegisterCalculatorServer(server, serviceImpl)
+
+	lis, err := net.Listen("tcp", ":8082")
+	if err != nil {
+		logger.Fatalf("failed to listen: %v", err)
 	}
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		logger.Info("Request received", zap.String("path", r.URL.Path))
-		fmt.Fprintf(w, "Hello, world!")
-		requestCounter.With(prometheus.Labels{"method": r.Method, "host": r.Host}).Inc()
+	serveMux := runtime.NewServeMux()
+	mustInit(v1.RegisterCalculatorHandlerFromEndpoint(ctx, serveMux, lis.Addr().String(),
+		[]grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}))
+
+	dbgMux := mux.NewRouter()
+	serveSwagger(dbgMux)
+
+	go func() {
+		mustInit(http.ListenAndServe(":8084", dbgMux))
+		logger.Info("started gateway on localhost:8084")
+	}()
+
+	mustInit(server.Serve(lis))
+	logger.Info("started grpc gateway on 8082 port")
+	mustInit(http.ListenAndServe(":8080", serveMux))
+	logger.Info("started gateway on localhost:8080")
+}
+
+func serveSwagger(mux *mux.Router) {
+	mux.Handle("/swagger", httpSwagger.Handler(
+		httpSwagger.URL("http://localhost:8084/swagger.json"), // URL to your swagger.json
+	))
+	mux.HandleFunc("/swagger.json", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "api/api.swagger.json")
 	})
+}
 
-	if err = http.ListenAndServe(":8080", nil); err != nil {
-		logger.Fatal("exited unexpectedly")
-		return
+func mustInit(err error) {
+	if err != nil {
+		logger.Fatalf("init failure: %s", err)
 	}
 }

@@ -8,6 +8,8 @@
 .idea/**/dictionaries
 .idea/**/shelf
 
+bin/
+vendor.pb/
 # AWS User-specific
 .idea/**/aws.xml
 

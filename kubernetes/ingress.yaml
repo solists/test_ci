@@ -10,6 +10,7 @@ spec:
   tls:
     - hosts:
         - m.yuff.tw1.su
+        - dbg-m.yuff.tw1.su
       secretName: myapp-tls
   rules:
     - host: m.yuff.tw1.su
@@ -22,3 +23,13 @@ spec:
                 name: myapp-service
                 port:
                   number: 8080
+    - host: dbg-m.yuff.tw1.su
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: myapp-service
+                port:
+                  number: 8084

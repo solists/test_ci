@@ -7,7 +7,14 @@ import (
 
 type Config struct {
 	DBDSN string
+	Env   string
 }
+
+const (
+	LocalEnv               = "local"
+	PostgresDriver         = "postgres"
+	PostgresMigrationsPath = "migrations"
+)
 
 func GetConfig() *Config {
 	dbHost := "postgres-service.postgres.svc.cluster.local"
@@ -19,5 +26,6 @@ func GetConfig() *Config {
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", dbUser, dbPass, dbHost, dbPort, dbName)
 	return &Config{
 		DBDSN: connStr,
+		Env:   os.Getenv("ENV"),
 	}
 }
