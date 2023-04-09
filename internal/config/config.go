@@ -23,7 +23,7 @@ func GetConfig() *Config {
 	dbUser := os.Getenv("POSTGRES_USER")
 	dbPass := os.Getenv("POSTGRES_PASSWORD")
 
-	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", dbUser, dbPass, dbHost, dbPort, dbName)
+	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable&binary_parameters=yes", dbUser, dbPass, dbHost, dbPort, dbName)
 	return &Config{
 		DBDSN: connStr,
 		Env:   os.Getenv("ENV"),

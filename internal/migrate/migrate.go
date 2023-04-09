@@ -2,17 +2,12 @@ package migrate
 
 import (
 	"fmt"
-	"mymod/internal/config"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/pressly/goose/v3"
 )
 
-func Migrate(cfg *config.Config, db *sqlx.DB, driver, migrationsPath string, migrateDown bool) (err error) {
-	if cfg.Env == config.LocalEnv {
-		return
-	}
-
+func Migrate(db *sqlx.DB, driver, migrationsPath string, migrateDown bool) (err error) {
 	if err = goose.SetDialect(driver); err != nil {
 		return fmt.Errorf("goose can't change dialect to %v", driver)
 	}
