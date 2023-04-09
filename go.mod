@@ -14,7 +14,6 @@ require (
 	github.com/solists/test_ci/pkg/logger v0.0.0-00010101000000-000000000000
 	github.com/solists/test_ci/pkg/pb/myapp v0.0.0-00010101000000-000000000000
 	github.com/stretchr/testify v1.8.2
-	github.com/swaggest/swgui v1.6.2
 	github.com/swaggo/http-swagger v1.3.4
 	google.golang.org/grpc v1.54.0
 )
@@ -72,7 +71,6 @@ require (
 	github.com/prometheus/procfs v0.9.0 // indirect
 	github.com/swaggo/files v0.0.0-20220610200504-28940afbdbfe // indirect
 	github.com/swaggo/swag v1.8.1 // indirect
-	github.com/vearutop/statigz v1.2.0 // indirect
 	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.24.0 // indirect
