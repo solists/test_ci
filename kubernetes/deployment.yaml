@@ -14,7 +14,7 @@ spec:
         app: myapp
       annotations:
         prometheus.io/scrape: "true"
-        prometheus.io/port: "9000"
+        prometheus.io/port: "8084"
     spec:
       containers:
         - name: myapp

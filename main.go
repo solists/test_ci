@@ -4,6 +4,7 @@ import (
 	"context"
 	"mymod/internal/config"
 	"mymod/internal/controller"
+	"mymod/internal/migrate"
 	"mymod/internal/repository"
 	"mymod/internal/service"
 	"net"
@@ -14,6 +15,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/solists/test_ci/pkg/logger"
 	v1 "github.com/solists/test_ci/pkg/pb/myapp/v1"
 	httpSwagger "github.com/swaggo/http-swagger"
@@ -22,7 +25,7 @@ import (
 )
 
 var (
-	requestCounter = prometheus.NewCounterVec(
+	requestCounter = promauto.NewCounterVec(
 		prometheus.CounterOpts{
 			Name: "myapp_requests_total",
 			Help: "Total number of requests received",
@@ -31,10 +34,6 @@ var (
 	)
 )
 
-func init() {
-	prometheus.MustRegister(requestCounter)
-}
-
 func main() {
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
@@ -42,20 +41,18 @@ func main() {
 
 	cfg := config.GetConfig()
 
-	var db *sqlx.DB
-	//
-	//db, err := sqlx.Connect(config.PostgresDriver, cfg.DBDSN)
-	//if err != nil {
-	//	logger.Fatalf("Failed to connect to database: %s", err)
-	//}
+	db, err := sqlx.Connect(config.PostgresDriver, cfg.DBDSN)
+	if err != nil {
+		logger.Fatalf("Failed to connect to database: %s", err)
+	}
 
-	//mustInit(migrate.Migrate(
-	//	cfg,
-	//	db,
-	//	config.PostgresDriver,
-	//	config.PostgresMigrationsPath,
-	//	false,
-	//))
+	mustInit(migrate.Migrate(
+		cfg,
+		db,
+		config.PostgresDriver,
+		config.PostgresMigrationsPath,
+		false,
+	))
 
 	repo := repository.NewRepository(db)
 	ctrl := controller.NewController(repo, cfg)
@@ -74,7 +71,9 @@ func main() {
 
 	dbgMux := mux.NewRouter()
 	dbgMux.Use(loggingMiddleware)
+	dbgMux.Use(metricMiddleware)
 	serveSwagger(dbgMux)
+	dbgMux.Handle("/metrics", promhttp.Handler())
 
 	go func() {
 		logger.Info("started gateway on localhost:8084")
@@ -96,16 +95,23 @@ func loggingMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+func metricMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		requestCounter.With(prometheus.Labels{"method": r.Method, "host": r.Host}).Inc()
+		next.ServeHTTP(w, r)
+	})
+}
+
 func serveSwagger(mux *mux.Router) {
-	mux.Handle("/swagger/", httpSwagger.Handler(
-		httpSwagger.URL("http://localhost:8084/swagger.json"),
-	))
-	mux.Handle("/swagger/index.html", httpSwagger.Handler(
-		httpSwagger.URL("http://localhost:8084/swagger.json"),
-	))
-	mux.HandleFunc("/swagger.json", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/swagger-ui", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "api/api.swagger.json")
 	})
+	mux.Handle("/swagger/", httpSwagger.Handler(
+		httpSwagger.URL(":8084/swagger-ui"),
+	))
+	mux.Handle("/swagger/index.html", httpSwagger.Handler(
+		httpSwagger.URL(":8084/swagger-ui"),
+	))
 }
 
 func mustInit(err error) {
