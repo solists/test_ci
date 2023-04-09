@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: myapp
-          image: docker.io/solists/myapp:v0.1.6
+          image: docker.io/solists/myapp:v0.1.7
           env:
             - name: POSTGRES_PASSWORD
               valueFrom:
@@ -35,6 +35,11 @@ spec:
                 configMapKeyRef:
                   name: postgres-configuration
                   key: POSTGRES_DB
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: myapp-secrets
+                  key: OPENAI_API_KEY
           ports:
             - containerPort: 8080
             - containerPort: 8084

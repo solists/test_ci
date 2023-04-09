@@ -5,6 +5,10 @@
 package mock_repository
 
 import (
+	context "context"
+	repository "mymod/internal/models/repository"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -29,4 +33,16 @@ func NewMockIRepository(ctrl *gomock.Controller) *MockIRepository {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockIRepository) EXPECT() *MockIRepositoryMockRecorder {
 	return m.recorder
+}
+
+// AddUsage mocks base method.
+func (m *MockIRepository) AddUsage(ctx context.Context, req *repository.UsageInsert) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "AddUsage", ctx, req)
+}
+
+// AddUsage indicates an expected call of AddUsage.
+func (mr *MockIRepositoryMockRecorder) AddUsage(ctx, req interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUsage", reflect.TypeOf((*MockIRepository)(nil).AddUsage), ctx, req)
 }

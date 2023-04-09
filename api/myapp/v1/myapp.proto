@@ -19,28 +19,32 @@ message Error {
 }
 
 
-service Calculator {
-  rpc Add(AddRequest) returns (AddResponse) {
+service TgService {
+  rpc GetQuery(GetQueryRequest) returns (GetQueryResponse) {
     option (google.api.http) = {
-      post: "/v1/calculator/add"
+      post: "/api/v1/query/get"
       body: "*"
     };
   }
   rpc Hello(HelloRequest) returns (HelloResponse) {
     option (google.api.http) = {
-      post: "/v1/calculator/hello"
+      post: "/api/v1/hello"
       body: "*"
     };
   }
 }
 
-message AddRequest {
-  int32 a = 1;
-  int32 b = 2;
+message GetQueryRequest {
+  uint64 user_id = 1;
+  repeated PromptMessage messages = 2;
 }
 
-message AddResponse {
-  int32 result = 1;
+message PromptMessage {
+  string message = 1;
+}
+
+message GetQueryResponse {
+  string result = 1;
 }
 
 message HelloRequest {}

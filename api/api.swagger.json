@@ -11,35 +11,9 @@
     "application/json"
   ],
   "paths": {
-    "/v1/calculator/add": {
+    "/api/v1/hello": {
       "post": {
-        "operationId": "Calculator_Add",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/v1AddResponse"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/v1AddRequest"
-            }
-          }
-        ],
-        "tags": [
-          "Calculator"
-        ]
-      }
-    },
-    "/v1/calculator/hello": {
-      "post": {
-        "operationId": "Calculator_Hello",
+        "operationId": "TgService_Hello",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -59,31 +33,58 @@
           }
         ],
         "tags": [
-          "Calculator"
+          "TgService"
+        ]
+      }
+    },
+    "/api/v1/query/get": {
+      "post": {
+        "operationId": "TgService_GetQuery",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/v1GetQueryResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/v1GetQueryRequest"
+            }
+          }
+        ],
+        "tags": [
+          "TgService"
         ]
       }
     }
   },
   "definitions": {
-    "v1AddRequest": {
+    "v1GetQueryRequest": {
       "type": "object",
       "properties": {
-        "a": {
-          "type": "integer",
-          "format": "int32"
+        "user_id": {
+          "type": "string",
+          "format": "uint64"
         },
-        "b": {
-          "type": "integer",
-          "format": "int32"
+        "messages": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/v1PromptMessage"
+          }
         }
       }
     },
-    "v1AddResponse": {
+    "v1GetQueryResponse": {
       "type": "object",
       "properties": {
         "result": {
-          "type": "integer",
-          "format": "int32"
+          "type": "string"
         }
       }
     },
@@ -94,6 +95,14 @@
       "type": "object",
       "properties": {
         "result": {
+          "type": "string"
+        }
+      }
+    },
+    "v1PromptMessage": {
+      "type": "object",
+      "properties": {
+        "message": {
           "type": "string"
         }
       }

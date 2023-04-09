@@ -1,9 +1,16 @@
 package repository
 
-import "github.com/jmoiron/sqlx"
+import (
+	"context"
+	"mymod/internal/models/repository"
+
+	"github.com/jmoiron/sqlx"
+)
 
 //go:generate mockgen -source=${GOFILE} -destination=mock/mock_${GOFILE}
-type IRepository interface{}
+type IRepository interface {
+	AddUsage(ctx context.Context, req *repository.UsageInsert) error
+}
 
 type Repository struct {
 	db *sqlx.DB

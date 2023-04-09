@@ -30,6 +30,7 @@ build:
 generate:
 	make install-deps
 	PATH=$(LOCAL_BIN):$(PATH) $(BUF_BIN) generate -v --path=api/myapp
+	$(GOENV) go mod tidy
 
 
 .PHONY: install-deps

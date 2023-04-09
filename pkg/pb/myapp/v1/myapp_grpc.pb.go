@@ -19,124 +19,124 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	Calculator_Add_FullMethodName   = "/myapp.v1.Calculator/Add"
-	Calculator_Hello_FullMethodName = "/myapp.v1.Calculator/Hello"
+	TgService_GetQuery_FullMethodName = "/myapp.v1.TgService/GetQuery"
+	TgService_Hello_FullMethodName    = "/myapp.v1.TgService/Hello"
 )
 
-// CalculatorClient is the client API for Calculator service.
+// TgServiceClient is the client API for TgService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type CalculatorClient interface {
-	Add(ctx context.Context, in *AddRequest, opts ...grpc.CallOption) (*AddResponse, error)
+type TgServiceClient interface {
+	GetQuery(ctx context.Context, in *GetQueryRequest, opts ...grpc.CallOption) (*GetQueryResponse, error)
 	Hello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloResponse, error)
 }
 
-type calculatorClient struct {
+type tgServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewCalculatorClient(cc grpc.ClientConnInterface) CalculatorClient {
-	return &calculatorClient{cc}
+func NewTgServiceClient(cc grpc.ClientConnInterface) TgServiceClient {
+	return &tgServiceClient{cc}
 }
 
-func (c *calculatorClient) Add(ctx context.Context, in *AddRequest, opts ...grpc.CallOption) (*AddResponse, error) {
-	out := new(AddResponse)
-	err := c.cc.Invoke(ctx, Calculator_Add_FullMethodName, in, out, opts...)
+func (c *tgServiceClient) GetQuery(ctx context.Context, in *GetQueryRequest, opts ...grpc.CallOption) (*GetQueryResponse, error) {
+	out := new(GetQueryResponse)
+	err := c.cc.Invoke(ctx, TgService_GetQuery_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *calculatorClient) Hello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloResponse, error) {
+func (c *tgServiceClient) Hello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloResponse, error) {
 	out := new(HelloResponse)
-	err := c.cc.Invoke(ctx, Calculator_Hello_FullMethodName, in, out, opts...)
+	err := c.cc.Invoke(ctx, TgService_Hello_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// CalculatorServer is the server API for Calculator service.
-// All implementations should embed UnimplementedCalculatorServer
+// TgServiceServer is the server API for TgService service.
+// All implementations should embed UnimplementedTgServiceServer
 // for forward compatibility
-type CalculatorServer interface {
-	Add(context.Context, *AddRequest) (*AddResponse, error)
+type TgServiceServer interface {
+	GetQuery(context.Context, *GetQueryRequest) (*GetQueryResponse, error)
 	Hello(context.Context, *HelloRequest) (*HelloResponse, error)
 }
 
-// UnimplementedCalculatorServer should be embedded to have forward compatible implementations.
-type UnimplementedCalculatorServer struct {
+// UnimplementedTgServiceServer should be embedded to have forward compatible implementations.
+type UnimplementedTgServiceServer struct {
 }
 
-func (UnimplementedCalculatorServer) Add(context.Context, *AddRequest) (*AddResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Add not implemented")
+func (UnimplementedTgServiceServer) GetQuery(context.Context, *GetQueryRequest) (*GetQueryResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetQuery not implemented")
 }
-func (UnimplementedCalculatorServer) Hello(context.Context, *HelloRequest) (*HelloResponse, error) {
+func (UnimplementedTgServiceServer) Hello(context.Context, *HelloRequest) (*HelloResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Hello not implemented")
 }
 
-// UnsafeCalculatorServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to CalculatorServer will
+// UnsafeTgServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to TgServiceServer will
 // result in compilation errors.
-type UnsafeCalculatorServer interface {
-	mustEmbedUnimplementedCalculatorServer()
+type UnsafeTgServiceServer interface {
+	mustEmbedUnimplementedTgServiceServer()
 }
 
-func RegisterCalculatorServer(s grpc.ServiceRegistrar, srv CalculatorServer) {
-	s.RegisterService(&Calculator_ServiceDesc, srv)
+func RegisterTgServiceServer(s grpc.ServiceRegistrar, srv TgServiceServer) {
+	s.RegisterService(&TgService_ServiceDesc, srv)
 }
 
-func _Calculator_Add_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AddRequest)
+func _TgService_GetQuery_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetQueryRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CalculatorServer).Add(ctx, in)
+		return srv.(TgServiceServer).GetQuery(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Calculator_Add_FullMethodName,
+		FullMethod: TgService_GetQuery_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CalculatorServer).Add(ctx, req.(*AddRequest))
+		return srv.(TgServiceServer).GetQuery(ctx, req.(*GetQueryRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Calculator_Hello_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _TgService_Hello_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(HelloRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(CalculatorServer).Hello(ctx, in)
+		return srv.(TgServiceServer).Hello(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: Calculator_Hello_FullMethodName,
+		FullMethod: TgService_Hello_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CalculatorServer).Hello(ctx, req.(*HelloRequest))
+		return srv.(TgServiceServer).Hello(ctx, req.(*HelloRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// Calculator_ServiceDesc is the grpc.ServiceDesc for Calculator service.
+// TgService_ServiceDesc is the grpc.ServiceDesc for TgService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var Calculator_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "myapp.v1.Calculator",
-	HandlerType: (*CalculatorServer)(nil),
+var TgService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "myapp.v1.TgService",
+	HandlerType: (*TgServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Add",
-			Handler:    _Calculator_Add_Handler,
+			MethodName: "GetQuery",
+			Handler:    _TgService_GetQuery_Handler,
 		},
 		{
 			MethodName: "Hello",
-			Handler:    _Calculator_Hello_Handler,
+			Handler:    _TgService_Hello_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

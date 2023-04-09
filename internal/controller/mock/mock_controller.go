@@ -5,6 +5,10 @@
 package mock_controller
 
 import (
+	context "context"
+	openai "mymod/internal/models/openai"
+	reflect "reflect"
+
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -29,4 +33,19 @@ func NewMockIController(ctrl *gomock.Controller) *MockIController {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockIController) EXPECT() *MockIControllerMockRecorder {
 	return m.recorder
+}
+
+// GetQueryOPENAI mocks base method.
+func (m *MockIController) GetQuery(ctx context.Context, req *openai.GetQueryRequest) (*openai.GetQueryResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetQuery", ctx, req)
+	ret0, _ := ret[0].(*openai.GetQueryResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetQueryOPENAI indicates an expected call of GetQueryOPENAI.
+func (mr *MockIControllerMockRecorder) GetQueryOPENAI(ctx, req interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetQuery", reflect.TypeOf((*MockIController)(nil).GetQuery), ctx, req)
 }

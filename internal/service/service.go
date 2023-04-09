@@ -7,7 +7,7 @@ import (
 )
 
 type Service struct {
-	v1.UnimplementedCalculatorServer
+	v1.UnimplementedTgServiceServer
 	ctrl controller.IController
 }
 

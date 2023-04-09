@@ -31,8 +31,8 @@ var _ = runtime.String
 var _ = utilities.NewDoubleArray
 var _ = metadata.Join
 
-func request_Calculator_Add_0(ctx context.Context, marshaler runtime.Marshaler, client CalculatorClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq AddRequest
+func request_TgService_GetQuery_0(ctx context.Context, marshaler runtime.Marshaler, client TgServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetQueryRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -43,13 +43,13 @@ func request_Calculator_Add_0(ctx context.Context, marshaler runtime.Marshaler, 
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := client.Add(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	msg, err := client.GetQuery(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
 	return msg, metadata, err
 
 }
 
-func local_request_Calculator_Add_0(ctx context.Context, marshaler runtime.Marshaler, server CalculatorServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq AddRequest
+func local_request_TgService_GetQuery_0(ctx context.Context, marshaler runtime.Marshaler, server TgServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetQueryRequest
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -60,12 +60,12 @@ func local_request_Calculator_Add_0(ctx context.Context, marshaler runtime.Marsh
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
-	msg, err := server.Add(ctx, &protoReq)
+	msg, err := server.GetQuery(ctx, &protoReq)
 	return msg, metadata, err
 
 }
 
-func request_Calculator_Hello_0(ctx context.Context, marshaler runtime.Marshaler, client CalculatorClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func request_TgService_Hello_0(ctx context.Context, marshaler runtime.Marshaler, client TgServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq HelloRequest
 	var metadata runtime.ServerMetadata
 
@@ -82,7 +82,7 @@ func request_Calculator_Hello_0(ctx context.Context, marshaler runtime.Marshaler
 
 }
 
-func local_request_Calculator_Hello_0(ctx context.Context, marshaler runtime.Marshaler, server CalculatorServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+func local_request_TgService_Hello_0(ctx context.Context, marshaler runtime.Marshaler, server TgServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq HelloRequest
 	var metadata runtime.ServerMetadata
 
@@ -99,13 +99,13 @@ func local_request_Calculator_Hello_0(ctx context.Context, marshaler runtime.Mar
 
 }
 
-// RegisterCalculatorHandlerServer registers the http handlers for service Calculator to "mux".
-// UnaryRPC     :call CalculatorServer directly.
+// RegisterTgServiceHandlerServer registers the http handlers for service TgService to "mux".
+// UnaryRPC     :call TgServiceServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
-// Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterCalculatorHandlerFromEndpoint instead.
-func RegisterCalculatorHandlerServer(ctx context.Context, mux *runtime.ServeMux, server CalculatorServer) error {
+// Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterTgServiceHandlerFromEndpoint instead.
+func RegisterTgServiceHandlerServer(ctx context.Context, mux *runtime.ServeMux, server TgServiceServer) error {
 
-	mux.Handle("POST", pattern_Calculator_Add_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_TgService_GetQuery_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -113,12 +113,12 @@ func RegisterCalculatorHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/myapp.v1.Calculator/Add", runtime.WithHTTPPathPattern("/v1/calculator/add"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/myapp.v1.TgService/GetQuery", runtime.WithHTTPPathPattern("/api/v1/query/get"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_Calculator_Add_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_TgService_GetQuery_0(annotatedContext, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
@@ -126,11 +126,11 @@ func RegisterCalculatorHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 			return
 		}
 
-		forward_Calculator_Add_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_TgService_GetQuery_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_Calculator_Hello_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_TgService_Hello_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
@@ -138,12 +138,12 @@ func RegisterCalculatorHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/myapp.v1.Calculator/Hello", runtime.WithHTTPPathPattern("/v1/calculator/hello"))
+		annotatedContext, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/myapp.v1.TgService/Hello", runtime.WithHTTPPathPattern("/api/v1/hello"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := local_request_Calculator_Hello_0(annotatedContext, inboundMarshaler, server, req, pathParams)
+		resp, md, err := local_request_TgService_Hello_0(annotatedContext, inboundMarshaler, server, req, pathParams)
 		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
@@ -151,16 +151,16 @@ func RegisterCalculatorHandlerServer(ctx context.Context, mux *runtime.ServeMux,
 			return
 		}
 
-		forward_Calculator_Hello_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_TgService_Hello_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
 	return nil
 }
 
-// RegisterCalculatorHandlerFromEndpoint is same as RegisterCalculatorHandler but
+// RegisterTgServiceHandlerFromEndpoint is same as RegisterTgServiceHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
-func RegisterCalculatorHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
+func RegisterTgServiceHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
 	conn, err := grpc.DialContext(ctx, endpoint, opts...)
 	if err != nil {
 		return err
@@ -180,63 +180,63 @@ func RegisterCalculatorHandlerFromEndpoint(ctx context.Context, mux *runtime.Ser
 		}()
 	}()
 
-	return RegisterCalculatorHandler(ctx, mux, conn)
+	return RegisterTgServiceHandler(ctx, mux, conn)
 }
 
-// RegisterCalculatorHandler registers the http handlers for service Calculator to "mux".
+// RegisterTgServiceHandler registers the http handlers for service TgService to "mux".
 // The handlers forward requests to the grpc endpoint over "conn".
-func RegisterCalculatorHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
-	return RegisterCalculatorHandlerClient(ctx, mux, NewCalculatorClient(conn))
+func RegisterTgServiceHandler(ctx context.Context, mux *runtime.ServeMux, conn *grpc.ClientConn) error {
+	return RegisterTgServiceHandlerClient(ctx, mux, NewTgServiceClient(conn))
 }
 
-// RegisterCalculatorHandlerClient registers the http handlers for service Calculator
-// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "CalculatorClient".
-// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "CalculatorClient"
+// RegisterTgServiceHandlerClient registers the http handlers for service TgService
+// to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "TgServiceClient".
+// Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "TgServiceClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "CalculatorClient" to call the correct interceptors.
-func RegisterCalculatorHandlerClient(ctx context.Context, mux *runtime.ServeMux, client CalculatorClient) error {
+// "TgServiceClient" to call the correct interceptors.
+func RegisterTgServiceHandlerClient(ctx context.Context, mux *runtime.ServeMux, client TgServiceClient) error {
 
-	mux.Handle("POST", pattern_Calculator_Add_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_TgService_GetQuery_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/myapp.v1.Calculator/Add", runtime.WithHTTPPathPattern("/v1/calculator/add"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/myapp.v1.TgService/GetQuery", runtime.WithHTTPPathPattern("/api/v1/query/get"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Calculator_Add_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_TgService_GetQuery_0(annotatedContext, inboundMarshaler, client, req, pathParams)
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Calculator_Add_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_TgService_GetQuery_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
-	mux.Handle("POST", pattern_Calculator_Hello_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("POST", pattern_TgService_Hello_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
 		var annotatedContext context.Context
-		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/myapp.v1.Calculator/Hello", runtime.WithHTTPPathPattern("/v1/calculator/hello"))
+		annotatedContext, err = runtime.AnnotateContext(ctx, mux, req, "/myapp.v1.TgService/Hello", runtime.WithHTTPPathPattern("/api/v1/hello"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
 		}
-		resp, md, err := request_Calculator_Hello_0(annotatedContext, inboundMarshaler, client, req, pathParams)
+		resp, md, err := request_TgService_Hello_0(annotatedContext, inboundMarshaler, client, req, pathParams)
 		annotatedContext = runtime.NewServerMetadataContext(annotatedContext, md)
 		if err != nil {
 			runtime.HTTPError(annotatedContext, mux, outboundMarshaler, w, req, err)
 			return
 		}
 
-		forward_Calculator_Hello_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+		forward_TgService_Hello_0(annotatedContext, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -244,13 +244,13 @@ func RegisterCalculatorHandlerClient(ctx context.Context, mux *runtime.ServeMux,
 }
 
 var (
-	pattern_Calculator_Add_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "calculator", "add"}, ""))
+	pattern_TgService_GetQuery_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "query", "get"}, ""))
 
-	pattern_Calculator_Hello_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"v1", "calculator", "hello"}, ""))
+	pattern_TgService_Hello_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "v1", "hello"}, ""))
 )
 
 var (
-	forward_Calculator_Add_0 = runtime.ForwardResponseMessage
+	forward_TgService_GetQuery_0 = runtime.ForwardResponseMessage
 
-	forward_Calculator_Hello_0 = runtime.ForwardResponseMessage
+	forward_TgService_Hello_0 = runtime.ForwardResponseMessage
 )
