@@ -74,7 +74,7 @@ func main() {
 	if _, err = b.SetWebhook(ctx, &bot.SetWebhookParams{
 		URL: cfg.WebHookHost,
 	}); err != nil {
-		logger.Fatalf("SetWebhook: %v", err)
+		logger.Errorf("SetWebhook: %v", err)
 	}
 
 	go func() {
