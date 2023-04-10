@@ -4,6 +4,7 @@ go 1.20
 
 require (
 	github.com/fullstorydev/grpcui v1.3.1
+	github.com/go-telegram/bot v0.7.3
 	github.com/golang/mock v1.4.4
 	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.15.2

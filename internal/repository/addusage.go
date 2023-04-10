@@ -3,17 +3,14 @@ package repository
 import (
 	"context"
 	"mymod/internal/models/repository"
-
-	"github.com/solists/test_ci/pkg/logger"
 )
 
-func (r *Repository) AddUsage(ctx context.Context, req *repository.UsageInsert) error {
-	if _, err := r.db.NamedExecContext(ctx, query, req); err != nil {
-		logger.Errorf("auditLog insert: %v", err)
-		return err
+func (r *Repository) AddUsage(ctx context.Context, req *repository.UsageInsert) (err error) {
+	if _, err = r.db.NamedExecContext(ctx, query, req); err != nil {
+		return
 	}
 
-	return nil
+	return
 }
 
 const query = `

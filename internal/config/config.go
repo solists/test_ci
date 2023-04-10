@@ -6,9 +6,12 @@ import (
 )
 
 type Config struct {
-	DBDSN  string
-	Env    string
-	APIKey string
+	DBDSN        string
+	Env          string
+	APIKey       string
+	TGAPIKey     string
+	WebHookHost  string
+	WebHookToken string
 }
 
 const (
@@ -29,8 +32,11 @@ func GetConfig() *Config {
 
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", dbUser, dbPass, dbHost, dbPort, dbName)
 	return &Config{
-		DBDSN:  connStr,
-		Env:    os.Getenv("ENV"),
-		APIKey: os.Getenv("OPENAI_API_KEY"),
+		DBDSN:        connStr,
+		Env:          os.Getenv("ENV"),
+		APIKey:       os.Getenv("OPENAI_API_KEY"),
+		TGAPIKey:     os.Getenv("TG_BOT_API_KEY"),
+		WebHookHost:  os.Getenv("WEBHOOK_HOST"),
+		WebHookToken: os.Getenv("WEBHOOK_TOKEN"),
 	}
 }

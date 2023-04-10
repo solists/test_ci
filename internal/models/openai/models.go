@@ -1,7 +1,7 @@
 package openai
 
 type GetQueryRequest struct {
-	UserID   uint64
+	UserID   int64
 	Messages []PromptMessage
 }
 type PromptMessage struct {

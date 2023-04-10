@@ -22,7 +22,7 @@ func NewAuditService(db *sqlx.DB) *AuditService {
 }
 
 type Log struct {
-	UserID    uint64      `db:"user_id"`
+	UserID    int64       `db:"user_id"`
 	Data      interface{} `db:"data" sql:"type:jsonb"`
 	Operation string      `db:"operation"`
 	Response  interface{} `db:"response" sql:"type:jsonb"`

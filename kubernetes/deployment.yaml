@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: myapp
-          image: docker.io/solists/myapp:v0.1.7
+          image: docker.io/solists/myapp:v0.1.8
           env:
             - name: POSTGRES_PASSWORD
               valueFrom:
@@ -40,10 +40,26 @@ spec:
                 secretKeyRef:
                   name: myapp-secrets
                   key: OPENAI_API_KEY
+            - name: TG_BOT_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: myapp-secrets
+                  key: TG_BOT_API_KEY
+            - name: WEBHOOK_TOKEN
+              valueFrom:
+                configMapKeyRef:
+                  name: myapp-config
+                  key: WEBHOOK_TOKEN
+            - name: WEBHOOK_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: myapp-config
+                  key: WEBHOOK_HOST
           ports:
             - containerPort: 8080
             - containerPort: 8084
             - containerPort: 8082
+            - containerPort: 2000
           resources:
             requests:
               cpu: 200m

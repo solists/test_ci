@@ -10,11 +10,13 @@ import (
 	"mymod/internal/migrate"
 	"mymod/internal/repository"
 	"mymod/internal/service"
+	"mymod/internal/service/tgservice"
 	"mymod/internal/util"
 	"mymod/pkg/audit"
 	"net"
 	"net/http"
 
+	"github.com/go-telegram/bot"
 	"github.com/gorilla/mux"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/jmoiron/sqlx"
@@ -59,9 +61,25 @@ func main() {
 	openaiClient := openai.NewClient(cfg)
 	ctrl := controller.NewController(repo, cfg, auditLogService, openaiClient)
 	serviceImpl := service.NewService(ctrl)
+	tgService := tgservice.NewService(repo, ctrl)
 	server := grpc.NewServer()
 	v1.RegisterTgServiceServer(server, serviceImpl)
 	reflection.Register(server)
+
+	opts := []bot.Option{
+		bot.WithDefaultHandler(tgService.Handler),
+	}
+
+	b, _ := bot.New(cfg.TGAPIKey, opts...)
+	if _, err = b.SetWebhook(ctx, &bot.SetWebhookParams{
+		URL: "https://example.com/webhook",
+	}); err != nil {
+		logger.Fatalf("SetWebhook: %v", err)
+	}
+
+	go func() {
+		util.MustInit(http.ListenAndServe(":2000", b.WebhookHandler()))
+	}()
 
 	go func() {
 		logger.Infof("started grpc gateway on %d port", config.GrpcPort)
@@ -76,6 +94,8 @@ func main() {
 	dbgMux.Handle("/metrics", promhttp.Handler())
 
 	util.StartMux(dbgMux, config.DbgPort)
+
+	go b.StartWebhook(ctx)
 
 	logger.Infof("started gateway on localhost:%d", config.MainPort)
 	util.MustInit(http.ListenAndServe(fmt.Sprintf(":%d", config.MainPort), serveMux))

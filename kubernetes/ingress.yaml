@@ -23,6 +23,16 @@ spec:
                 name: myapp-service
                 port:
                   number: 8080
+    - host: m.yuff.tw1.su
+      http:
+        paths:
+          - path: /webhook
+            pathType: Prefix
+            backend:
+              service:
+                name: myapp-service
+                port:
+                  number: 2000
     - host: dbg-m.yuff.tw1.su
       http:
         paths:

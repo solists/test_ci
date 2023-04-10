@@ -10,6 +10,7 @@ RUN go build -o myapp .
 EXPOSE 8080
 EXPOSE 8082
 EXPOSE 8084
+EXPOSE 2000
 
 ENV USER=myapp-user
 RUN adduser -D ${USER}
