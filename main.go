@@ -72,7 +72,8 @@ func main() {
 
 	b, _ := bot.New(cfg.TGAPIKey, opts...)
 	if _, err = b.SetWebhook(ctx, &bot.SetWebhookParams{
-		URL: cfg.WebHookHost,
+		URL:            cfg.WebHookHost,
+		AllowedUpdates: []string{"message"},
 	}); err != nil {
 		logger.Errorf("SetWebhook: %v", err)
 	}
