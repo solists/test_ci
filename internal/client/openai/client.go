@@ -2,6 +2,7 @@ package openai
 
 import (
 	"context"
+	"github.com/pkg/errors"
 	"mymod/internal/config"
 )
 import openai "github.com/sashabaranov/go-openai"
@@ -10,6 +11,8 @@ import openai "github.com/sashabaranov/go-openai"
 type Client interface {
 	GetQueryOPENAI(ctx context.Context, messages []openai.ChatCompletionMessage) (*openai.ChatCompletionResponse, error)
 }
+
+var ErrTooBigPrompt = errors.New("too big prompt")
 
 type ClientImpl struct {
 	cfg    *config.Config

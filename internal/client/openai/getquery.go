@@ -2,6 +2,7 @@ package openai
 
 import (
 	"context"
+	"strings"
 
 	"github.com/opentracing/opentracing-go"
 	"github.com/pkg/errors"
@@ -22,7 +23,24 @@ func (c *ClientImpl) GetQueryOPENAI(ctx context.Context, messages []openai.ChatC
 		},
 	)
 	if err != nil {
-		return nil, err
+		if strings.Contains(err.Error(), "status code: 400") {
+			// retry only with last message if prompt is too big
+			resp, err = c.client.CreateChatCompletion(
+				ctx,
+				openai.ChatCompletionRequest{
+					Model:    openai.GPT3Dot5Turbo,
+					Messages: messages[len(messages)-1:],
+				},
+			)
+			if err != nil {
+				if strings.Contains(err.Error(), "status code: 400") {
+					logger.Errorf("bad request in getquery: %v", err)
+					return nil, ErrTooBigPrompt
+				}
+
+				return nil, err
+			}
+		}
 	}
 
 	if len(resp.Choices) != 1 {

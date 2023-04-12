@@ -3,6 +3,10 @@ package tgservice
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promauto"
+	openai2 "mymod/internal/client/openai"
 	"mymod/internal/controller"
 	"mymod/internal/models/openai"
 	repomodels "mymod/internal/models/repository"
@@ -15,6 +19,16 @@ import (
 )
 
 const defaultLogLimit = 10
+
+var (
+	queryRequestCounter = promauto.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: "myapp_qet_query_requests_total",
+			Help: "Total number of requests received",
+		},
+		[]string{"user"},
+	)
+)
 
 type Service struct {
 	ctrl controller.IController
@@ -32,9 +46,25 @@ func NewService(
 }
 
 func (s *Service) Handler(ctx context.Context, b *bot.Bot, update *models.Update) {
+	var finalErr error
+	defer func() {
+		if finalErr != nil {
+			_, err := b.SendMessage(ctx, &bot.SendMessageParams{
+				ChatID: update.Message.Chat.ID,
+				Text:   finalErr.Error(),
+			})
+			if err != nil {
+				logger.Errorf("err send message: chatId: %v, error: %v", update.Message.Chat.ID, err)
+			}
+		}
+	}()
+
 	if update.Message == nil || update.Message.From == nil {
 		return
 	}
+
+	queryRequestCounter.With(prometheus.Labels{"user": fmt.Sprint(update.Message.From.ID)}).Inc()
+
 	var user repomodels.UserData
 	var messageLogsIns []repomodels.MessageLog
 	defer func() {
@@ -57,6 +87,7 @@ func (s *Service) Handler(ctx context.Context, b *bot.Bot, update *models.Update
 	messageLogs, err := s.repo.GetMessageLogWithUserData(ctx, update.Message.Chat.ID, defaultLogLimit)
 	if err != nil {
 		logger.Errorf("error GetMessageLogWithUserData: %v, chatID: %v", err, update.Message.Chat.ID)
+		finalErr = errors.New("error occurred")
 		return
 	}
 	if len(messageLogs) == 0 {
@@ -74,9 +105,12 @@ func (s *Service) Handler(ctx context.Context, b *bot.Bot, update *models.Update
 					logger.Errorf("error InsertUserData: %v, user: %v", err, user)
 				}
 
+				finalErr = errors.New("You are not registered yet")
 				return
 			}
 			logger.Errorf("error GetUserData: %v, userID: %v", err, update.Message.From.ID)
+
+			finalErr = errors.New("error occurred")
 			return
 		}
 		user = *userResp
@@ -98,17 +132,21 @@ func (s *Service) Handler(ctx context.Context, b *bot.Bot, update *models.Update
 				logger.Errorf("error InsertUserData: %v, user: %v", err, user)
 			}
 
+			finalErr = errors.New("You are not registered yet")
 			return
 		}
 	}
 	if user.UserID == 0 || !user.Allowed {
 		logger.Infof("user not allowed: %v", update.Message.From.ID)
+		finalErr = errors.New("You are not registered yet")
 		return
 	}
 	if user.ChatID != update.Message.Chat.ID {
 		if err = s.repo.UpdateUserDataChatID(ctx, update.Message.Chat.ID, user.UserID); err != nil {
 			logger.Errorf("error UpdateUserDataChatID: %v, user: %v, chat: %v",
 				err, user, update.Message.Chat.ID)
+
+			finalErr = errors.New("error occurred")
 			return
 		}
 		user.ChatID = update.Message.Chat.ID
@@ -131,6 +169,10 @@ func (s *Service) Handler(ctx context.Context, b *bot.Bot, update *models.Update
 	})
 	if err != nil {
 		logger.Errorf("GetQuery: %v, user: %v", err, user)
+
+		if errors.Is(err, openai2.ErrTooBigPrompt) {
+			finalErr = err
+		}
 		return
 	}
 
@@ -151,6 +193,6 @@ func (s *Service) Handler(ctx context.Context, b *bot.Bot, update *models.Update
 	})
 
 	if err != nil {
-		logger.Error("ohh epic fail")
+		logger.Errorf("ohh epic fail:  %v, user: %v", err, user)
 	}
 }
