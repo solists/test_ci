@@ -45,7 +45,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: "${{secrets.DOCKER_USERNAME}}/myapp:v${{ github.ref_name }}"
+          tags: "${{secrets.DOCKER_USERNAME}}/myapp:${{ github.ref_name }}"
           labels: ${{ steps.meta.outputs.labels }}
           
       - name: Set up Kubernetes environment
@@ -57,7 +57,7 @@ jobs:
           kubectl get namespace myapp || kubectl create namespace myapp
       - name: Deploy to Kubernetes
         run: |
-          export IMAGE_TAG=v${{ github.ref_name }}
+          export IMAGE_TAG=${{ github.ref_name }}
           envsubst < kubernetes/deployment.yaml > kubernetes/deployment_temp.yaml
           kubectl apply -f kubernetes/deployment_temp.yaml
           kubectl apply -f kubernetes/service.yaml
