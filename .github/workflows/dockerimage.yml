@@ -3,6 +3,9 @@ name: Deploy myapp to MicroK8s
 on:
   push:
     branches: [ main ]
+  create:
+    tags:
+      - '*'
 
 jobs:
   deploy:
