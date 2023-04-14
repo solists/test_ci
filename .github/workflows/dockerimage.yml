@@ -54,10 +54,3 @@ jobs:
           kubectl apply -f kubernetes/service.yaml
           kubectl apply -f kubernetes/ingress.yaml
           kubectl apply -f kubernetes/hpa.yaml
-  skipped_message:
-    runs-on: ubuntu-latest
-    needs: deploy
-    if: needs.deploy.result == 'skipped'
-    steps:
-      - name: Echo message when skipped
-        run: echo "The build and deploy job was skipped because there was no Git tag."

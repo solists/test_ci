@@ -59,7 +59,7 @@ func (s *Service) Handler(ctx context.Context, b *bot.Bot, update *models.Update
 		}
 	}()
 
-	if update.Message == nil || update.Message.From == nil {
+	if update == nil || update.Message == nil || update.Message.From == nil {
 		return
 	}
 
