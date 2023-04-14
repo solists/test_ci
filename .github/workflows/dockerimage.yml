@@ -54,7 +54,7 @@ jobs:
         run: |
           export IMAGE_TAG=v${{ github.ref_name }}
           envsubst < kubernetes/deployment.yaml > kubernetes/deployment_temp.yaml
-          kubectl apply -f kubernetes/deployment.yaml
+          kubectl apply -f kubernetes/deployment_temp.yaml
           kubectl apply -f kubernetes/service.yaml
           kubectl apply -f kubernetes/ingress.yaml
           kubectl apply -f kubernetes/hpa.yaml
