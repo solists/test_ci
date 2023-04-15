@@ -62,9 +62,29 @@ func (s *Service) Handler(ctx context.Context, b *bot.Bot, update *models.Update
 	if update.InlineQuery != nil {
 		if update.InlineQuery.From == nil {
 			logger.Infof("inline query nil from: %v", update.InlineQuery)
+		} else {
+			logger.Info(update.InlineQuery.Query)
+			logger.Infof("username: %v, inline query: %v", update.InlineQuery.From.Username, update.InlineQuery)
 		}
-		logger.Info(update.InlineQuery.Query)
-		logger.Infof("username: %v, inline query: %v", update.InlineQuery.From.Username, update.InlineQuery)
+
+		_, err := b.AnswerInlineQuery(ctx, &bot.AnswerInlineQueryParams{
+			InlineQueryID: update.InlineQuery.ID,
+			Results: []models.InlineQueryResult{
+				&models.InlineQueryResultArticle{
+					ID:    "1",
+					Title: "result_test",
+					InputMessageContent: models.InputTextMessageContent{
+						MessageText: `var kek int64
+kek = 0`,
+						ParseMode:             "code",
+						DisableWebPagePreview: true,
+					},
+				},
+			},
+		})
+		if err != nil {
+			logger.Errorf("error while reply to inline query:  %v, user: %v", err, update.InlineQuery.From)
+		}
 	}
 
 	if update == nil || update.Message == nil || update.Message.From == nil {
