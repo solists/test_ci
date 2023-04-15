@@ -4,19 +4,18 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/go-telegram/bot"
+	"github.com/go-telegram/bot/models"
+	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/solists/test_ci/pkg/logger"
 	openai2 "mymod/internal/client/openai"
 	"mymod/internal/controller"
 	"mymod/internal/models/openai"
 	repomodels "mymod/internal/models/repository"
 	"mymod/internal/repository"
 	"strings"
-
-	"github.com/go-telegram/bot"
-	"github.com/go-telegram/bot/models"
-	"github.com/pkg/errors"
-	"github.com/solists/test_ci/pkg/logger"
 )
 
 const defaultLogLimit = 10
@@ -76,6 +75,73 @@ func (s *Service) Handler(ctx context.Context, b *bot.Bot, update *models.Update
 	}
 
 	queryRequestCounter.With(prometheus.Labels{"user": fmt.Sprint(updateUserFrom.ID)}).Inc()
+
+	if isInline {
+		user, err := s.repo.GetUserData(ctx, updateUserFrom.ID)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				userIns := &repomodels.UserData{
+					UserID:    updateUserFrom.ID,
+					ChatID:    update.Message.Chat.ID,
+					FirstName: updateUserFrom.FirstName,
+					LastName:  updateUserFrom.LastName,
+					UserName:  updateUserFrom.Username,
+				}
+				if err = s.repo.InsertUserData(ctx, userIns); err != nil {
+					logger.Errorf("error InsertUserData: %v, user: %v", err, user)
+				}
+
+				finalErr = errors.New("You are not registered yet")
+				return
+			}
+			logger.Errorf("error GetUserData: %v, userID: %v", err, updateUserFrom.ID)
+
+			finalErr = errors.New("error occurred")
+			return
+		}
+		
+		if user.UserID == 0 || !user.Allowed {
+			logger.Infof("user not allowed: %v", user.UserID)
+			return
+		}
+		inlineQuery := update.InlineQuery.Query
+
+		queryEndSuffix := "!!!"
+		if !strings.HasSuffix(inlineQuery, queryEndSuffix) {
+			return
+		} else {
+			inlineQuery = strings.TrimSuffix(inlineQuery, queryEndSuffix)
+		}
+
+		openaiResp, err := s.ctrl.GetQuery(ctx, &openai.GetQueryRequest{
+			UserID: user.UserID,
+			Messages: []openai.PromptMessage{
+				{
+					inlineQuery,
+				},
+			},
+		})
+
+		_, err = b.AnswerInlineQuery(ctx, &bot.AnswerInlineQueryParams{
+			InlineQueryID: update.InlineQuery.ID,
+			Results: []models.InlineQueryResult{
+				&models.InlineQueryResultArticle{
+					ID:    "1",
+					Title: "gpt resp",
+					InputMessageContent: models.InputTextMessageContent{
+						MessageText:           openaiResp.Result,
+						DisableWebPagePreview: true,
+					},
+				},
+			},
+		})
+
+		if err != nil {
+			logger.Errorf("ohh epic fail inline inlineQuery:  %v, user: %v", err, user)
+		}
+
+		return
+	}
 
 	var user repomodels.UserData
 	var messageLogsIns []repomodels.MessageLog
@@ -143,50 +209,6 @@ func (s *Service) Handler(ctx context.Context, b *bot.Bot, update *models.Update
 			finalErr = errors.New("You are not registered yet")
 			return
 		}
-	}
-
-	if isInline {
-		if user.UserID == 0 || !user.Allowed {
-			logger.Infof("user not allowed: %v", user.UserID)
-			return
-		}
-		inlineQuery := update.InlineQuery.Query
-
-		queryEndSuffix := "!!!"
-		if !strings.HasSuffix(inlineQuery, queryEndSuffix) {
-			return
-		} else {
-			inlineQuery = strings.TrimSuffix(inlineQuery, queryEndSuffix)
-		}
-
-		openaiResp, err := s.ctrl.GetQuery(ctx, &openai.GetQueryRequest{
-			UserID: user.UserID,
-			Messages: []openai.PromptMessage{
-				{
-					inlineQuery,
-				},
-			},
-		})
-
-		_, err = b.AnswerInlineQuery(ctx, &bot.AnswerInlineQueryParams{
-			InlineQueryID: update.InlineQuery.ID,
-			Results: []models.InlineQueryResult{
-				&models.InlineQueryResultArticle{
-					ID:    "1",
-					Title: "gpt resp",
-					InputMessageContent: models.InputTextMessageContent{
-						MessageText:           openaiResp.Result,
-						DisableWebPagePreview: true,
-					},
-				},
-			},
-		})
-
-		if err != nil {
-			logger.Errorf("ohh epic fail inline inlineQuery:  %v, user: %v", err, user)
-		}
-
-		return
 	}
 
 	if user.UserID == 0 || !user.Allowed {
