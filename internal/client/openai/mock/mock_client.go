@@ -6,10 +6,10 @@ package mock_openai
 
 import (
 	context "context"
-	openai "mymod/internal/models/openai"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
+	openai "github.com/sashabaranov/go-openai"
 )
 
 // MockClient is a mock of Client interface.
@@ -36,16 +36,31 @@ func (m *MockClient) EXPECT() *MockClientMockRecorder {
 }
 
 // GetQuery mocks base method.
-func (m *MockClient) GetQuery(ctx context.Context, req *openai.GetQueryRequest) (*openai.GetQueryResponse, error) {
+func (m *MockClient) GetQuery(ctx context.Context, messages []openai.ChatCompletionMessage) (*openai.ChatCompletionResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetQuery", ctx, req)
-	ret0, _ := ret[0].(*openai.GetQueryResponse)
+	ret := m.ctrl.Call(m, "GetQuery", ctx, messages)
+	ret0, _ := ret[0].(*openai.ChatCompletionResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetQueryOPENAI indicates an expected call of GetQueryOPENAI.
-func (mr *MockClientMockRecorder) GetQueryOPENAI(ctx, req interface{}) *gomock.Call {
+// GetQuery indicates an expected call of GetQuery.
+func (mr *MockClientMockRecorder) GetQuery(ctx, messages interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetQuery", reflect.TypeOf((*MockClient)(nil).GetQuery), ctx, req)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetQuery", reflect.TypeOf((*MockClient)(nil).GetQuery), ctx, messages)
+}
+
+// GetTranscription mocks base method.
+func (m *MockClient) GetTranscription(ctx context.Context, filePath string) (*openai.AudioResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTranscription", ctx, filePath)
+	ret0, _ := ret[0].(*openai.AudioResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTranscription indicates an expected call of GetTranscription.
+func (mr *MockClientMockRecorder) GetTranscription(ctx, filePath interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTranscription", reflect.TypeOf((*MockClient)(nil).GetTranscription), ctx, filePath)
 }

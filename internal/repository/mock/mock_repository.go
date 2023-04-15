@@ -36,13 +36,116 @@ func (m *MockIRepository) EXPECT() *MockIRepositoryMockRecorder {
 }
 
 // AddUsage mocks base method.
-func (m *MockIRepository) AddUsage(ctx context.Context, req *repository.UsageInsert) {
+func (m *MockIRepository) AddUsage(ctx context.Context, req *repository.UsageInsert) error {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "AddUsage", ctx, req)
+	ret := m.ctrl.Call(m, "AddUsage", ctx, req)
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // AddUsage indicates an expected call of AddUsage.
 func (mr *MockIRepositoryMockRecorder) AddUsage(ctx, req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUsage", reflect.TypeOf((*MockIRepository)(nil).AddUsage), ctx, req)
+}
+
+// GetMessageLogWithUserData mocks base method.
+func (m *MockIRepository) GetMessageLogWithUserData(ctx context.Context, chatID int64, limit int) ([]repository.MessageLogUserIDResp, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMessageLogWithUserData", ctx, chatID, limit)
+	ret0, _ := ret[0].([]repository.MessageLogUserIDResp)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetMessageLogWithUserData indicates an expected call of GetMessageLogWithUserData.
+func (mr *MockIRepositoryMockRecorder) GetMessageLogWithUserData(ctx, chatID, limit interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMessageLogWithUserData", reflect.TypeOf((*MockIRepository)(nil).GetMessageLogWithUserData), ctx, chatID, limit)
+}
+
+// GetUserData mocks base method.
+func (m *MockIRepository) GetUserData(ctx context.Context, userID int64) (*repository.UserData, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserData", ctx, userID)
+	ret0, _ := ret[0].(*repository.UserData)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserData indicates an expected call of GetUserData.
+func (mr *MockIRepositoryMockRecorder) GetUserData(ctx, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserData", reflect.TypeOf((*MockIRepository)(nil).GetUserData), ctx, userID)
+}
+
+// InsertMessageLog mocks base method.
+func (m *MockIRepository) InsertMessageLog(ctx context.Context, req *repository.MessageLog) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InsertMessageLog", ctx, req)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// InsertMessageLog indicates an expected call of InsertMessageLog.
+func (mr *MockIRepositoryMockRecorder) InsertMessageLog(ctx, req interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertMessageLog", reflect.TypeOf((*MockIRepository)(nil).InsertMessageLog), ctx, req)
+}
+
+// InsertMessageLogs mocks base method.
+func (m *MockIRepository) InsertMessageLogs(ctx context.Context, logs []repository.MessageLog) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InsertMessageLogs", ctx, logs)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// InsertMessageLogs indicates an expected call of InsertMessageLogs.
+func (mr *MockIRepositoryMockRecorder) InsertMessageLogs(ctx, logs interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertMessageLogs", reflect.TypeOf((*MockIRepository)(nil).InsertMessageLogs), ctx, logs)
+}
+
+// InsertUserData mocks base method.
+func (m *MockIRepository) InsertUserData(ctx context.Context, req *repository.UserData) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InsertUserData", ctx, req)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// InsertUserData indicates an expected call of InsertUserData.
+func (mr *MockIRepositoryMockRecorder) InsertUserData(ctx, req interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertUserData", reflect.TypeOf((*MockIRepository)(nil).InsertUserData), ctx, req)
+}
+
+// SelectLastMessageLogByChatID mocks base method.
+func (m *MockIRepository) SelectLastMessageLogByChatID(ctx context.Context, chatID, limit uint64) ([]repository.MessageLogResp, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SelectLastMessageLogByChatID", ctx, chatID, limit)
+	ret0, _ := ret[0].([]repository.MessageLogResp)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SelectLastMessageLogByChatID indicates an expected call of SelectLastMessageLogByChatID.
+func (mr *MockIRepositoryMockRecorder) SelectLastMessageLogByChatID(ctx, chatID, limit interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SelectLastMessageLogByChatID", reflect.TypeOf((*MockIRepository)(nil).SelectLastMessageLogByChatID), ctx, chatID, limit)
+}
+
+// UpdateUserDataChatID mocks base method.
+func (m *MockIRepository) UpdateUserDataChatID(ctx context.Context, chatID, userID int64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUserDataChatID", ctx, chatID, userID)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateUserDataChatID indicates an expected call of UpdateUserDataChatID.
+func (mr *MockIRepositoryMockRecorder) UpdateUserDataChatID(ctx, chatID, userID interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUserDataChatID", reflect.TypeOf((*MockIRepository)(nil).UpdateUserDataChatID), ctx, chatID, userID)
 }

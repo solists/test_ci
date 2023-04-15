@@ -44,8 +44,23 @@ func (m *MockIController) GetQuery(ctx context.Context, req *openai.GetQueryRequ
 	return ret0, ret1
 }
 
-// GetQueryOPENAI indicates an expected call of GetQueryOPENAI.
-func (mr *MockIControllerMockRecorder) GetQueryOPENAI(ctx, req interface{}) *gomock.Call {
+// GetQuery indicates an expected call of GetQuery.
+func (mr *MockIControllerMockRecorder) GetQuery(ctx, req interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetQuery", reflect.TypeOf((*MockIController)(nil).GetQuery), ctx, req)
+}
+
+// GetTranscription mocks base method.
+func (m *MockIController) GetTranscription(ctx context.Context, req *openai.GetTranscriptionRequest) (*openai.GetTranscriptionResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetTranscription", ctx, req)
+	ret0, _ := ret[0].(*openai.GetTranscriptionResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTranscription indicates an expected call of GetTranscription.
+func (mr *MockIControllerMockRecorder) GetTranscription(ctx, req interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTranscription", reflect.TypeOf((*MockIController)(nil).GetTranscription), ctx, req)
 }
