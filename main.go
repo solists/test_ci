@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"io"
 	"mymod/internal/client/openai"
 	"mymod/internal/config"
 	"mymod/internal/controller"
@@ -16,7 +15,6 @@ import (
 	"mymod/pkg/audit"
 	"net"
 	"net/http"
-	"os"
 
 	"github.com/go-telegram/bot"
 	"github.com/gorilla/mux"
@@ -36,28 +34,6 @@ func main() {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	cfg := config.GetConfig()
-
-	downloader := tgservice.NewDownloader("")
-	fileReader, err := downloader.Download(ctx, "voice/file_1.oga")
-	if err != nil {
-		logger.Errorf("err download voice: %v, user: %v", err, 123)
-		return
-	}
-	file, err := os.CreateTemp("", "voice-*.mp3")
-	if err != nil {
-		logger.Errorf("err create temp: %v, user: %v", err, 123)
-		return
-	}
-
-	_, err = io.Copy(file, fileReader)
-	if err != nil {
-		file.Close()
-		logger.Errorf("err copy to file voice: %v, user: %v", err, 123)
-		return
-	}
-	file.Close()
-
-	return
 
 	db, err := sqlx.Connect(config.PostgresDriver, cfg.DBDSN)
 	if err != nil {
