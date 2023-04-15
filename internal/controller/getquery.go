@@ -28,7 +28,7 @@ func (c *Controller) GetQuery(ctx context.Context, req *models.GetQueryRequest) 
 		})
 	}
 
-	resp, err := c.openaiClient.GetQueryOPENAI(ctx, messages)
+	resp, err := c.openaiClient.GetQuery(ctx, messages)
 
 	var status uint64 = 200
 	if err != nil {

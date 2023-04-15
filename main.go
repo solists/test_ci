@@ -33,7 +33,6 @@ func main() {
 	ctx := context.Background()
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-
 	cfg := config.GetConfig()
 
 	db, err := sqlx.Connect(config.PostgresDriver, cfg.DBDSN)
@@ -61,7 +60,7 @@ func main() {
 	openaiClient := openai.NewClient(cfg)
 	ctrl := controller.NewController(repo, cfg, auditLogService, openaiClient)
 	serviceImpl := service.NewService(ctrl)
-	tgService := tgservice.NewService(repo, ctrl)
+	tgService := tgservice.NewService(repo, ctrl, tgservice.NewDownloader(cfg.TGAPIKey))
 	server := grpc.NewServer()
 	v1.RegisterTgServiceServer(server, serviceImpl)
 	reflection.Register(server)

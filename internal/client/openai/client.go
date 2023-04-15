@@ -9,7 +9,8 @@ import openai "github.com/sashabaranov/go-openai"
 
 //go:generate mockgen -source=${GOFILE} -destination=mock/mock_${GOFILE}
 type Client interface {
-	GetQueryOPENAI(ctx context.Context, messages []openai.ChatCompletionMessage) (*openai.ChatCompletionResponse, error)
+	GetQuery(ctx context.Context, messages []openai.ChatCompletionMessage) (*openai.ChatCompletionResponse, error)
+	GetTranscription(ctx context.Context, filePath string) (*openai.AudioResponse, error)
 }
 
 var ErrTooBigPrompt = errors.New("too big prompt")

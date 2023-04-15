@@ -10,11 +10,14 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/solists/test_ci/pkg/logger"
+	"io"
 	openai2 "mymod/internal/client/openai"
 	"mymod/internal/controller"
 	"mymod/internal/models/openai"
 	repomodels "mymod/internal/models/repository"
 	"mymod/internal/repository"
+	"net/http"
+	"os"
 	"strings"
 )
 
@@ -31,17 +34,20 @@ var (
 )
 
 type Service struct {
-	ctrl controller.IController
-	repo repository.IRepository
+	ctrl       controller.IController
+	repo       repository.IRepository
+	downloader *Downloader
 }
 
 func NewService(
 	repo repository.IRepository,
 	ctrl controller.IController,
+	downloader *Downloader,
 ) *Service {
 	return &Service{
-		repo: repo,
-		ctrl: ctrl,
+		repo:       repo,
+		ctrl:       ctrl,
+		downloader: downloader,
 	}
 }
 
@@ -122,7 +128,6 @@ func (s *Service) Handler(ctx context.Context, b *bot.Bot, update *models.Update
 				},
 			},
 		})
-
 		_, err = b.AnswerInlineQuery(ctx, &bot.AnswerInlineQueryParams{
 			InlineQueryID: update.InlineQuery.ID,
 			Results: []models.InlineQueryResult{
@@ -151,13 +156,6 @@ func (s *Service) Handler(ctx context.Context, b *bot.Bot, update *models.Update
 			logger.Errorf("InsertMessageLogs: %v, messages: %v", err, messageLogsIns)
 		}
 	}()
-
-	messageLogsIns = append(messageLogsIns, repomodels.MessageLog{
-		UserID:    &updateUserFrom.ID,
-		ChatID:    update.Message.Chat.ID,
-		MessageID: update.Message.ID,
-		Message:   update.Message.Text,
-	})
 
 	messageLogs, err := s.repo.GetMessageLogWithUserData(ctx, update.Message.Chat.ID, defaultLogLimit)
 	if err != nil {
@@ -228,6 +226,56 @@ func (s *Service) Handler(ctx context.Context, b *bot.Bot, update *models.Update
 		user.ChatID = update.Message.Chat.ID
 	}
 
+	updateMessage := update.Message.Text
+	if update.Message.Voice != nil {
+		gotVoice, err := b.GetFile(ctx, &bot.GetFileParams{FileID: update.Message.Voice.FileID})
+		if err != nil {
+			logger.Errorf("err get voice: %v, user: %v", err, user)
+			finalErr = errors.New("error occurred")
+			return
+		}
+		fileReader, err := s.downloader.Download(ctx, gotVoice.FilePath)
+		if err != nil {
+			logger.Errorf("err download voice: %v, user: %v", err, user)
+			finalErr = errors.New("error occurred")
+			return
+		}
+
+		file, err := os.CreateTemp("", "voice-*.mp3")
+		if err != nil {
+			logger.Errorf("err create temp: %v, user: %v", err, user)
+			finalErr = errors.New("error occurred")
+		}
+		defer func() {
+			file.Close()
+			os.Remove(file.Name())
+		}()
+
+		_, err = io.Copy(file, fileReader)
+		if err != nil {
+			logger.Errorf("err copy to file voice: %v, user: %v", err, user)
+			finalErr = errors.New("error occurred")
+		}
+
+		transcript, err := s.ctrl.GetTranscription(ctx, &openai.GetTranscriptionRequest{
+			UserID:   user.UserID,
+			FilePath: file.Name(),
+		})
+		if err != nil {
+			logger.Errorf("err GetTranscription: %v, user: %v", err, user)
+			finalErr = errors.New("error occurred")
+		}
+
+		updateMessage = transcript.Result
+	}
+
+	messageLogsIns = append(messageLogsIns, repomodels.MessageLog{
+		UserID:    &updateUserFrom.ID,
+		ChatID:    update.Message.Chat.ID,
+		MessageID: update.Message.ID,
+		Message:   updateMessage,
+	})
+
 	var messages []openai.PromptMessage
 	// we get from query in reverse order, so first is the last
 	for i := len(messageLogs) - 1; i >= 0; i-- {
@@ -236,7 +284,7 @@ func (s *Service) Handler(ctx context.Context, b *bot.Bot, update *models.Update
 		})
 	}
 	messages = append(messages, openai.PromptMessage{
-		Message: update.Message.Text,
+		Message: updateMessage,
 	})
 
 	openaiResp, err := s.ctrl.GetQuery(ctx, &openai.GetQueryRequest{
@@ -271,4 +319,51 @@ func (s *Service) Handler(ctx context.Context, b *bot.Bot, update *models.Update
 	if err != nil {
 		logger.Errorf("ohh epic fail:  %v, user: %v", err, user)
 	}
+}
+
+type Downloader struct {
+	token string
+
+	server      string
+	downloadURL string
+	httpClient  Doer
+}
+
+func NewDownloader(token string) *Downloader {
+	return &Downloader{
+		token:       token,
+		server:      "https://api.telegram.org",
+		downloadURL: "%s/file/bot%s/%s",
+		httpClient:  http.DefaultClient,
+	}
+}
+
+type Doer interface {
+	Do(r *http.Request) (*http.Response, error)
+}
+
+func (d *Downloader) Download(ctx context.Context, path string) (io.ReadCloser, error) {
+	url := d.buildDownloadURL(d.token, path)
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	if err != nil {
+		return nil, fmt.Errorf("new request: %v", err)
+	}
+
+	res, err := d.httpClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("do request: %v", err)
+	}
+
+	if res.StatusCode != http.StatusOK {
+		defer res.Body.Close()
+
+		return nil, fmt.Errorf("while download: %v, %v", res.StatusCode, res.Status)
+	}
+
+	return res.Body, nil
+}
+
+func (d *Downloader) buildDownloadURL(token, path string) string {
+	return fmt.Sprintf(d.downloadURL, d.server, token, path)
 }

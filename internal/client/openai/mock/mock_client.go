@@ -35,7 +35,7 @@ func (m *MockClient) EXPECT() *MockClientMockRecorder {
 	return m.recorder
 }
 
-// GetQueryOPENAI mocks base method.
+// GetQuery mocks base method.
 func (m *MockClient) GetQuery(ctx context.Context, req *openai.GetQueryRequest) (*openai.GetQueryResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetQuery", ctx, req)

@@ -12,6 +12,7 @@ import (
 //go:generate mockgen -source=${GOFILE} -destination=mock/mock_${GOFILE}
 type IController interface {
 	GetQuery(ctx context.Context, req *models.GetQueryRequest) (*models.GetQueryResponse, error)
+	GetTranscription(ctx context.Context, req *models.GetTranscriptionRequest) (*models.GetTranscriptionResponse, error)
 }
 
 type Controller struct {
