@@ -77,6 +77,15 @@ func (s *Service) Handler(ctx context.Context, b *bot.Bot, update *models.Update
 	queryRequestCounter.With(prometheus.Labels{"user": fmt.Sprint(updateUserFrom.ID)}).Inc()
 
 	if isInline {
+		inlineQuery := update.InlineQuery.Query
+
+		queryEndSuffix := "!!!"
+		if !strings.HasSuffix(inlineQuery, queryEndSuffix) {
+			return
+		} else {
+			inlineQuery = strings.TrimSuffix(inlineQuery, queryEndSuffix)
+		}
+
 		user, err := s.repo.GetUserData(ctx, updateUserFrom.ID)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
@@ -99,18 +108,10 @@ func (s *Service) Handler(ctx context.Context, b *bot.Bot, update *models.Update
 			finalErr = errors.New("error occurred")
 			return
 		}
-		
+
 		if user.UserID == 0 || !user.Allowed {
 			logger.Infof("user not allowed: %v", user.UserID)
 			return
-		}
-		inlineQuery := update.InlineQuery.Query
-
-		queryEndSuffix := "!!!"
-		if !strings.HasSuffix(inlineQuery, queryEndSuffix) {
-			return
-		} else {
-			inlineQuery = strings.TrimSuffix(inlineQuery, queryEndSuffix)
 		}
 
 		openaiResp, err := s.ctrl.GetQuery(ctx, &openai.GetQueryRequest{
