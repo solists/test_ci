@@ -10,3 +10,11 @@ type PromptMessage struct {
 type GetQueryResponse struct {
 	Result string
 }
+
+type GetTranscriptionRequest struct {
+	UserID   int64
+	FilePath string
+}
+type GetTranscriptionResponse struct {
+	Result string
+}

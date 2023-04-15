@@ -1,5 +1,8 @@
 FROM golang:1.20.3-alpine3.17
 
+RUN apk update && \
+    apk add --no-cache ffmpeg
+
 WORKDIR /app
 
 COPY go.mod go.sum ./
@@ -13,7 +16,9 @@ EXPOSE 8084
 EXPOSE 2000
 
 ENV USER=myapp-user
-RUN adduser -D ${USER}
+RUN adduser -D ${USER} && \
+    mkdir -p /app/tempVoice && \
+    chown -R ${USER}:${USER} /app/tempVoice
 USER ${USER}
 
 CMD [ "./myapp" ]

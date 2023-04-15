@@ -10,7 +10,7 @@ import (
 	"github.com/solists/test_ci/pkg/logger"
 )
 
-func (c *ClientImpl) GetQueryOPENAI(ctx context.Context, messages []openai.ChatCompletionMessage) (*openai.ChatCompletionResponse, error) {
+func (c *ClientImpl) GetQuery(ctx context.Context, messages []openai.ChatCompletionMessage) (*openai.ChatCompletionResponse, error) {
 	opName := "GetQueryOpenClient"
 	sp, _ := opentracing.StartSpanFromContext(ctx, opName)
 	defer sp.Finish()

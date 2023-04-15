@@ -6,12 +6,13 @@ import (
 )
 
 type Config struct {
-	DBDSN        string
-	Env          string
-	APIKey       string
-	TGAPIKey     string
-	WebHookHost  string
-	WebHookToken string
+	DBDSN               string
+	Env                 string
+	APIKey              string
+	TGAPIKey            string
+	WebHookHost         string
+	WebHookToken        string
+	NeedToRebindWebHook bool
 }
 
 const (
