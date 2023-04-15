@@ -59,6 +59,14 @@ func (s *Service) Handler(ctx context.Context, b *bot.Bot, update *models.Update
 		}
 	}()
 
+	if update.InlineQuery != nil {
+		if update.InlineQuery.From == nil {
+			logger.Infof("inline query nil from: %v", update.InlineQuery)
+		}
+		logger.Info(update.InlineQuery.Query)
+		logger.Infof("username: %v, inline query: %v", update.InlineQuery.From.Username, update.InlineQuery)
+	}
+
 	if update == nil || update.Message == nil || update.Message.From == nil {
 		return
 	}
