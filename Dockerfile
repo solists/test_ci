@@ -15,7 +15,7 @@ EXPOSE 8082
 EXPOSE 8084
 EXPOSE 2000
 
-RUN adduser -D ${USER}
+ENV USER=myapp-user
 RUN adduser -D ${USER} && \
     mkdir -p /app/tempVoice && \
     chown -R ${USER}:${USER} /app/tempVoice
