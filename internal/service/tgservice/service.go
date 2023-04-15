@@ -234,6 +234,7 @@ func (s *Service) Handler(ctx context.Context, b *bot.Bot, update *models.Update
 			finalErr = errors.New("error occurred")
 			return
 		}
+		logger.Info(gotVoice.FilePath)
 		fileReader, err := s.downloader.Download(ctx, gotVoice.FilePath)
 		if err != nil {
 			logger.Errorf("err download voice: %v, user: %v", err, user)
@@ -245,17 +246,20 @@ func (s *Service) Handler(ctx context.Context, b *bot.Bot, update *models.Update
 		if err != nil {
 			logger.Errorf("err create temp: %v, user: %v", err, user)
 			finalErr = errors.New("error occurred")
+			return
 		}
 		defer func() {
-			file.Close()
 			os.Remove(file.Name())
 		}()
 
 		_, err = io.Copy(file, fileReader)
 		if err != nil {
+			file.Close()
 			logger.Errorf("err copy to file voice: %v, user: %v", err, user)
 			finalErr = errors.New("error occurred")
+			return
 		}
+		file.Close()
 
 		transcript, err := s.ctrl.GetTranscription(ctx, &openai.GetTranscriptionRequest{
 			UserID:   user.UserID,
@@ -264,6 +268,7 @@ func (s *Service) Handler(ctx context.Context, b *bot.Bot, update *models.Update
 		if err != nil {
 			logger.Errorf("err GetTranscription: %v, user: %v", err, user)
 			finalErr = errors.New("error occurred")
+			return
 		}
 
 		updateMessage = transcript.Result
