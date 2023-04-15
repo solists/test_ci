@@ -11,6 +11,7 @@ import (
 	"mymod/internal/models/openai"
 	repomodels "mymod/internal/models/repository"
 	"mymod/internal/repository"
+	"strings"
 
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
@@ -59,39 +60,22 @@ func (s *Service) Handler(ctx context.Context, b *bot.Bot, update *models.Update
 		}
 	}()
 
-	if update.InlineQuery != nil {
-		if update.InlineQuery.From == nil {
-			logger.Infof("inline query nil from: %v", update.InlineQuery)
-		} else {
-			logger.Info(update.InlineQuery.Query)
-			logger.Infof("username: %v, inline query: %v", update.InlineQuery.From.Username, update.InlineQuery)
-		}
-
-		_, err := b.AnswerInlineQuery(ctx, &bot.AnswerInlineQueryParams{
-			InlineQueryID: update.InlineQuery.ID,
-			Results: []models.InlineQueryResult{
-				&models.InlineQueryResultArticle{
-					ID:    "1",
-					Title: "result_test",
-					InputMessageContent: models.InputTextMessageContent{
-						MessageText: `var kek int64
-kek = 0`,
-						ParseMode:             "code",
-						DisableWebPagePreview: true,
-					},
-				},
-			},
-		})
-		if err != nil {
-			logger.Errorf("error while reply to inline query:  %v, user: %v", err, update.InlineQuery.From)
-		}
-	}
-
+	var isInline bool
 	if update == nil || update.Message == nil || update.Message.From == nil {
-		return
+		if update.InlineQuery == nil || update.InlineQuery.From == nil {
+			return
+		}
+		isInline = true
 	}
 
-	queryRequestCounter.With(prometheus.Labels{"user": fmt.Sprint(update.Message.From.ID)}).Inc()
+	var updateUserFrom *models.User
+	if isInline {
+		updateUserFrom = update.InlineQuery.From
+	} else {
+		updateUserFrom = update.Message.From
+	}
+
+	queryRequestCounter.With(prometheus.Labels{"user": fmt.Sprint(updateUserFrom.ID)}).Inc()
 
 	var user repomodels.UserData
 	var messageLogsIns []repomodels.MessageLog
@@ -101,12 +85,8 @@ kek = 0`,
 		}
 	}()
 
-	var userIDMessageReq *int64
-	if update.Message.From != nil {
-		userIDMessageReq = &update.Message.From.ID
-	}
 	messageLogsIns = append(messageLogsIns, repomodels.MessageLog{
-		UserID:    userIDMessageReq,
+		UserID:    &updateUserFrom.ID,
 		ChatID:    update.Message.Chat.ID,
 		MessageID: update.Message.ID,
 		Message:   update.Message.Text,
@@ -119,15 +99,15 @@ kek = 0`,
 		return
 	}
 	if len(messageLogs) == 0 {
-		userResp, err := s.repo.GetUserData(ctx, update.Message.From.ID)
+		userResp, err := s.repo.GetUserData(ctx, updateUserFrom.ID)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				userIns := &repomodels.UserData{
-					UserID:    update.Message.From.ID,
+					UserID:    updateUserFrom.ID,
 					ChatID:    update.Message.Chat.ID,
-					FirstName: update.Message.From.FirstName,
-					LastName:  update.Message.From.LastName,
-					UserName:  update.Message.From.Username,
+					FirstName: updateUserFrom.FirstName,
+					LastName:  updateUserFrom.LastName,
+					UserName:  updateUserFrom.Username,
 				}
 				if err = s.repo.InsertUserData(ctx, userIns); err != nil {
 					logger.Errorf("error InsertUserData: %v, user: %v", err, user)
@@ -136,7 +116,7 @@ kek = 0`,
 				finalErr = errors.New("You are not registered yet")
 				return
 			}
-			logger.Errorf("error GetUserData: %v, userID: %v", err, update.Message.From.ID)
+			logger.Errorf("error GetUserData: %v, userID: %v", err, updateUserFrom.ID)
 
 			finalErr = errors.New("error occurred")
 			return
@@ -150,11 +130,11 @@ kek = 0`,
 			user.ChatID = messageLogs[0].ChatID
 		} else {
 			userIns := &repomodels.UserData{
-				UserID:    update.Message.From.ID,
+				UserID:    updateUserFrom.ID,
 				ChatID:    update.Message.Chat.ID,
-				FirstName: update.Message.From.FirstName,
-				LastName:  update.Message.From.LastName,
-				UserName:  update.Message.From.Username,
+				FirstName: updateUserFrom.FirstName,
+				LastName:  updateUserFrom.LastName,
+				UserName:  updateUserFrom.Username,
 			}
 			if err = s.repo.InsertUserData(ctx, userIns); err != nil {
 				logger.Errorf("error InsertUserData: %v, user: %v", err, user)
@@ -164,8 +144,53 @@ kek = 0`,
 			return
 		}
 	}
+
+	if isInline {
+		if user.UserID == 0 || !user.Allowed {
+			logger.Infof("user not allowed: %v", user.UserID)
+			return
+		}
+		inlineQuery := update.InlineQuery.Query
+
+		queryEndSuffix := "!!!"
+		if !strings.HasSuffix(inlineQuery, queryEndSuffix) {
+			return
+		} else {
+			inlineQuery = strings.TrimSuffix(inlineQuery, queryEndSuffix)
+		}
+
+		openaiResp, err := s.ctrl.GetQuery(ctx, &openai.GetQueryRequest{
+			UserID: user.UserID,
+			Messages: []openai.PromptMessage{
+				{
+					inlineQuery,
+				},
+			},
+		})
+
+		_, err = b.AnswerInlineQuery(ctx, &bot.AnswerInlineQueryParams{
+			InlineQueryID: update.InlineQuery.ID,
+			Results: []models.InlineQueryResult{
+				&models.InlineQueryResultArticle{
+					ID:    "1",
+					Title: "gpt resp",
+					InputMessageContent: models.InputTextMessageContent{
+						MessageText:           openaiResp.Result,
+						DisableWebPagePreview: true,
+					},
+				},
+			},
+		})
+
+		if err != nil {
+			logger.Errorf("ohh epic fail inline inlineQuery:  %v, user: %v", err, user)
+		}
+
+		return
+	}
+
 	if user.UserID == 0 || !user.Allowed {
-		logger.Infof("user not allowed: %v", update.Message.From.ID)
+		logger.Infof("user not allowed: %v", user.UserID)
 		finalErr = errors.New("You are not registered yet")
 		return
 	}
